@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Administración de precios</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light p-5">
+
+  <!-- ================== MENÚ PRINCIPAL ================== -->
+  <div id="mainMenu" class="container text-center">
+    <h2 class="mb-3 fw-bold">Administración de precios</h2>
+    <p class="text-muted mb-4">Este aplicativo permite gestionar tasas, comisiones y tarifarios de forma ordenada y supervisada.</p>
+    <div class="d-grid gap-3 col-6 mx-auto">
+      <button class="btn btn-primary" id="btnTasas">1. Administración de tasas</button>
+      <button class="btn btn-secondary">2. Administración de comisiones</button>
+      <button class="btn btn-secondary">3. Administración de tarifario</button>
+    </div>
+  </div>
+
+  <!-- ================== PANTALLA TASAS ================== -->
+  <div id="tasasMenu" class="container text-center d-none">
+    <h2 class="mb-4 fw-bold">Administración de tasas</h2>
+    <div class="d-grid gap-3 col-6 mx-auto">
+      <button class="btn btn-primary" id="btnTasasActivas">Tasas activas</button>
+      <button class="btn btn-secondary" disabled>Tasas pasivas</button>
+    </div>
+  </div>
+
+  <!-- ================== PANTALLA BANCA ================== -->
+  <div id="bancaMenu" class="container text-center d-none">
+    <h2 class="mb-4 fw-bold">Selección de Banca</h2>
+    <div class="d-grid gap-3 col-6 mx-auto">
+      <button class="btn btn-primary" id="btnBancaMinorista">Banca Minorista</button>
+      <button class="btn btn-secondary" disabled>Banca Mayorista</button>
+    </div>
+  </div>
+
+  <!-- ================== FORMULARIO DE TASAS ================== -->
+  <div id="tasasSection" class="d-none">
+    <div class="container">
+      <h2 class="mb-4 text-center">Carga de Tasas – Finanzas</h2>
+
+      <!-- ================== PANTALLA OPERADOR ================== -->
+      <div id="operadorSection">
+        <div class="row mb-3">
+          <div class="col-md-3">
+            <label class="form-label">Banco</label>
+            <select id="banco" class="form-select">
+              <option value="">Seleccione...</option>
+              <option>BSJ</option>
+              <option>BSC</option>
+              <option>BERSA</option>
+              <option>BSF</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Producto</label>
+            <select id="producto" class="form-select">
+              <option value="">Seleccione...</option>
+              <option>Préstamos personales</option>
+              <option>DESCUBIERTO PAQUETE DE CUENTA INDIVIDUOS</option>
+              <option>Cuotificación consumos Tarjeta de DÉBITO</option>
+              <option>ADELANTO DE HABERES</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Segmento</label>
+            <select id="segmento" class="form-select">
+              <option value="">Seleccione...</option>
+              <option>APP</option>
+              <option>PPH</option>
+              <option>MA</option>
+              <option>JUP</option>
+              <option>JUN</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Formulario de tasas -->
+        <h5 class="mt-4">Tasas</h5>
+        <table class="table table-bordered" id="formTable">
+          <thead class="table-light">
+            <tr>
+              <th>Plazo (meses)</th>
+              <th>TNA (%)</th>
+              <th>CFT (%)</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <select class="form-select plazo">
+                  <option value="">Seleccione...</option>
+                  <option>12</option>
+                  <option>24</option>
+                  <option>36</option>
+                  <option>48</option>
+                  <option>60</option>
+                  <option>72</option>
+                </select>
+              </td>
+              <td><input type="number" class="form-control tna" step="0.01"></td>
+              <td><input type="number" class="form-control cft" step="0.01"></td>
+              <td><button class="btn btn-danger btn-sm removeRow">Eliminar</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="btn btn-secondary mb-3" id="addRow">Agregar nueva fila</button>
+        <button class="btn btn-primary mb-3" id="saveData">Guardar carga</button>
+
+        <!-- Tabla acumulativa de cargas -->
+        <h5 class="mt-4">Cargas realizadas</h5>
+        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+          <table class="table table-striped" id="dataTable">
+            <thead class="table-dark">
+              <tr>
+                <th>Banco</th>
+                <th>Producto</th>
+                <th>Segmento</th>
+                <th>Plazo</th>
+                <th>TNA</th>
+                <th>CFT</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <!-- Botón para derivar -->
+        <div class="mt-3">
+          <button class="btn btn-warning" id="toParametria">Derivar a parametría</button>
+        </div>
+      </div>
+
+      <!-- ================== PANTALLA PARAMETRÍA ================== -->
+      <div id="parametriaSection" class="d-none">
+        <h4 class="mt-4">Parametría: vinculación de tasas y productos</h4>
+        <div id="observacionSupervisor" class="alert alert-danger d-none"></div>
+
+        <div class="table-responsive mb-3" style="max-height: 300px; overflow-y: auto;">
+          <table class="table table-striped" id="paramTable">
+            <thead class="table-dark">
+              <tr>
+                <th>Banco</th>
+                <th>Producto</th>
+                <th>Segmento</th>
+                <th>Plazo</th>
+                <th>TNA</th>
+                <th>CFT</th>
+                <th>Códigos de producto vinculados</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <button class="btn btn-info" id="toSupervisor">Derivar a supervisión</button>
+      </div>
+
+      <!-- ================== PANTALLA SUPERVISIÓN ================== -->
+      <div id="supervisionSection" class="d-none">
+        <h4 class="mt-4">Supervisión de Tasas – Operaciones</h4>
+        <div class="table-responsive mb-3" style="max-height: 300px; overflow-y: auto;">
+          <table class="table table-striped" id="superTable">
+            <thead class="table-dark">
+              <tr>
+                <th>Banco</th>
+                <th>Producto</th>
+                <th>Segmento</th>
+                <th>Plazo</th>
+                <th>TNA</th>
+                <th>CFT</th>
+                <th>Códigos vinculados</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Observación (si rechaza)</label>
+          <textarea class="form-control" id="supervisorComment" rows="2"></textarea>
+        </div>
+
+        <button class="btn btn-success" id="exportCSV">Aprobar y exportar CSV</button>
+        <button class="btn btn-danger" id="backToParam">Rechazar y volver a parametría</button>
+      </div>
+
+      <!-- ================== PANTALLA CONTROL POR OPOSICIÓN ================== -->
+      <div id="controlOposicionSection" class="d-none">
+        <h4 class="mt-4 text-center">Control por Oposición</h4>
+        <p class="text-muted text-center">Revise los datos definidos por Finanzas y confronte con lo impactado en CORE.</p>
+
+        <!-- Resumen de parametría -->
+        <h5 class="mt-4">Resumen de Parametría: Definición de Finanzas</h5>
+        <div class="table-responsive mb-4" style="max-height: 300px; overflow-y: auto;">
+          <table class="table table-striped" id="controlParamTable">
+            <thead class="table-dark">
+              <tr>
+                <th>Banco</th>
+                <th>Producto</th>
+                <th>Segmento</th>
+                <th>Plazo</th>
+                <th>TNA</th>
+                <th>CFT</th>
+                <th>Códigos vinculados</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <!-- Resumen CORE -->
+        <h5 class="mt-4">Resumen CORE (Impacto en el sistema)</h5>
+        <div class="table-responsive mb-4" style="max-height: 300px; overflow-y: auto;">
+          <table class="table table-striped">
+            <thead class="table-dark">
+              <tr>
+                <th>Banco</th>
+                <th>Producto</th>
+                <th>Segmento</th>
+                <th>Plazo</th>
+                <th>TNA</th>
+                <th>CFT</th>
+                <th>Códigos vinculados</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="7" class="text-center text-muted">[Sin datos - pendiente de integración con CORE]</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="text-center">
+          <button class="btn btn-primary btn-lg" id="toFinal">Continuar a procesos finales</button>
+        </div>
+      </div>
+
+      <!-- ================== PANTALLA FINAL ================== -->
+      <div id="finalSection" class="d-none text-center">
+        <h2 class="fw-bold mb-3">Procesos Finales de Publicación</h2>
+        <p class="text-muted mb-4">
+          El aplicativo ha finalizado la gestión de tasas. Seleccione las acciones de publicación y difusión correspondientes.
+        </p>
+        <div class="d-grid gap-3 col-8 mx-auto">
+          <button class="btn btn-outline-primary btn-lg">1. Generar y enviar PDF para publicaciones en la WEB</button>
+          <button class="btn btn-outline-success btn-lg">2. Generar y enviar PDF a los tótems de sucursales</button>
+          <button class="btn btn-outline-info btn-lg">3. Generar Excel para PUSF - Régimen informativo de transparencia</button>
+          <button class="btn btn-outline-warning btn-lg">4. Enviar mail a "Gestión Documental" para publicación normativa</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================== SCRIPT ================== -->
+  <script>
+    // ===== Navegación =====
+    document.getElementById("btnTasas").addEventListener("click", () => {
+      document.getElementById("mainMenu").classList.add("d-none");
+      document.getElementById("tasasMenu").classList.remove("d-none");
+    });
+    document.getElementById("btnTasasActivas").addEventListener("click", () => {
+      document.getElementById("tasasMenu").classList.add("d-none");
+      document.getElementById("bancaMenu").classList.remove("d-none");
+    });
+    document.getElementById("btnBancaMinorista").addEventListener("click", () => {
+      document.getElementById("bancaMenu").classList.add("d-none");
+      document.getElementById("tasasSection").classList.remove("d-none");
+    });
+
+    // ===== Agregar y eliminar filas =====
+    document.getElementById("addRow").addEventListener("click", () => {
+      const row = `
+        <tr>
+          <td>
+            <select class="form-select plazo">
+              <option value="">Seleccione...</option>
+              <option>12</option>
+              <option>24</option>
+              <option>36</option>
+              <option>48</option>
+              <option>60</option>
+              <option>72</option>
+            </select>
+          </td>
+          <td><input type="number" class="form-control tna" step="0.01"></td>
+          <td><input type="number" class="form-control cft" step="0.01"></td>
+          <td><button class="btn btn-danger btn-sm removeRow">Eliminar</button></td>
+        </tr>`;
+      document.querySelector("#formTable tbody").insertAdjacentHTML("beforeend", row);
+    });
+    document.addEventListener("click", e => {
+      if (e.target.classList.contains("removeRow")) e.target.closest("tr").remove();
+    });
+
+    // ===== Guardar carga =====
+    document.getElementById("saveData").addEventListener("click", () => {
+      const banco = document.getElementById("banco").value;
+      const producto = document.getElementById("producto").value;
+      const segmento = document.getElementById("segmento").value;
+      const rows = document.querySelectorAll("#formTable tbody tr");
+      rows.forEach(row => {
+        const plazo = row.querySelector(".plazo").value;
+        const tna = row.querySelector(".tna").value;
+        const cft = row.querySelector(".cft").value;
+        if (banco && producto && segmento && plazo && tna && cft) {
+          const newRow = `<tr><td>${banco}</td><td>${producto}</td><td>${segmento}</td><td>${plazo}</td><td>${tna}</td><td>${cft}</td></tr>`;
+          document.querySelector("#dataTable tbody").insertAdjacentHTML("beforeend", newRow);
+        }
+      });
+      // Reset
+      document.querySelector("#formTable tbody").innerHTML = `
+        <tr>
+          <td>
+            <select class="form-select plazo">
+              <option value="">Seleccione...</option>
+              <option>12</option>
+              <option>24</option>
+              <option>36</option>
+              <option>48</option>
+              <option>60</option>
+              <option>72</option>
+            </select>
+          </td>
+          <td><input type="number" class="form-control tna" step="0.01"></td>
+          <td><input type="number" class="form-control cft" step="0.01"></td>
+          <td><button class="btn btn-danger btn-sm removeRow">Eliminar</button></td>
+        </tr>`;
+    });
+
+    // ===== Derivar a parametría =====
+    document.getElementById("toParametria").addEventListener("click", () => {
+      document.getElementById("operadorSection").classList.add("d-none");
+      document.getElementById("parametriaSection").classList.remove("d-none");
+      document.querySelector("#paramTable tbody").innerHTML = "";
+      document.querySelectorAll("#dataTable tbody tr").forEach(r => {
+        const cells = r.querySelectorAll("td");
+        const newRow = `<tr>
+          <td>${cells[0].innerText}</td>
+          <td>${cells[1].innerText}</td>
+          <td>${cells[2].innerText}</td>
+          <td>${cells[3].innerText}</td>
+          <td>${cells[4].innerText}</td>
+          <td>${cells[5].innerText}</td>
+          <td><input type="text" class="form-control codigos" placeholder="Ej: 024,618"></td>
+        </tr>`;
+        document.querySelector("#paramTable tbody").insertAdjacentHTML("beforeend", newRow);
+      });
+    });
+
+    // ===== Derivar a supervisión =====
+    document.getElementById("toSupervisor").addEventListener("click", () => {
+      document.getElementById("parametriaSection").classList.add("d-none");
+      document.getElementById("supervisionSection").classList.remove("d-none");
+      document.querySelector("#superTable tbody").innerHTML = "";
+      document.querySelectorAll("#paramTable tbody tr").forEach(r => {
+        const cells = r.querySelectorAll("td");
+        const newRow = `<tr>
+          <td>${cells[0].innerText}</td>
+          <td>${cells[1].innerText}</td>
+          <td>${cells[2].innerText}</td>
+          <td>${cells[3].innerText}</td>
+          <td>${cells[4].innerText}</td>
+          <td>${cells[5].innerText}</td>
+          <td>${cells[6].querySelector("input").value}</td>
+        </tr>`;
+        document.querySelector("#superTable tbody").insertAdjacentHTML("beforeend", newRow);
+      });
+    });
+
+    // ===== Rechazar y volver a parametría =====
+    document.getElementById("backToParam").addEventListener("click", () => {
+      const comment = document.getElementById("supervisorComment").value.trim();
+      if (!comment) { alert("Debe ingresar una observación para rechazar."); return; }
+      document.getElementById("supervisionSection").classList.add("d-none");
+      document.getElementById("parametriaSection").classList.remove("d-none");
+      document.getElementById("observacionSupervisor").classList.remove("d-none");
+      document.getElementById("observacionSupervisor").innerText = "Observación del supervisor: " + comment;
+    });
+
+    // ===== Aprobar y exportar CSV =====
+    document.getElementById("exportCSV").addEventListener("click", () => {
+      document.getElementById("supervisionSection").classList.add("d-none");
+      document.getElementById("controlOposicionSection").classList.remove("d-none");
+
+      document.querySelector("#controlParamTable tbody").innerHTML = "";
+      document.querySelectorAll("#superTable tbody tr").forEach(r => {
+        document.querySelector("#controlParamTable tbody").appendChild(r.cloneNode(true));
+      });
+    });
+
+    // ===== Continuar a pantalla final =====
+    document.getElementById("toFinal").addEventListener("click", () => {
+      document.getElementById("controlOposicionSection").classList.add("d-none");
+      document.getElementById("finalSection").classList.remove("d-none");
+    });
+  </script>
+</body>
+</html>
